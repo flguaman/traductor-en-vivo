@@ -1,1 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Traductor Digital</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        h1 {
+            text-align: center;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+            background-color: #fff;
+        }
+        
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Block de Notas</h1>
+    
+    <textarea id="notas" rows="10" cols="50" placeholder="Escribe tus notas aquí"></textarea>
+    
+    <button onclick="guardarNotas()">Guardar Notas</button>
+    <button onclick="iniciarReconocimientoVoz()">Iniciar Reconocimiento de Voz</button>
+    <button onclick="activarTraduccion()">Activar Traducción</button>
+    
+    <!-- Script para guardar notas en el almacenamiento local -->
+    <script>
+        var traduccionActivada = false;
+
+        // Función para guardar notas
+        function guardarNotas() {
+            var notas = document.getElementById('notas').value;
+            localStorage.setItem('notas', notas);
+            alert('Notas guardadas correctamente');
+        }
+        
+        // Función para iniciar reconocimiento de voz
+        function iniciarReconocimientoVoz() {
+            var reconocimientoVoz = new webkitSpeechRecognition();
+            reconocimientoVoz.lang = 'es-ES';
+            reconocimientoVoz.onresult = function(event) {
+                var resultado = event.results[0][0].transcript;
+                if (traduccionActivada) {
+                    traducirTexto(resultado);
+                } else {
+                    document.getElementById('notas').value += ' ' + resultado;
+                }
+            };
+            reconocimientoVoz.start();
+        }
+
+        // Función para activar o desactivar la traducción
+        function activarTraduccion() {
+            traduccionActivada = !traduccionActivada;
+            if (traduccionActivada) {
+                alert('Traducción activada');
+            } else {
+                alert('Traducción desactivada');
+            }
+        }
+        
+        // Función para traducir texto a inglés
+        function traducirTexto(texto) {
+            // Llama a la API de traducción de Google Translate
+            fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q=' + encodeURI(texto))
+            .then(response => response.json())
+            .then(data => {
+                var traduccion = data[0][0][0]; // Obtiene la traducción del resultado
+                document.getElementById('notas').value += ' ' + traduccion;
+            })
+            .catch(error => console.error('Error al traducir:', error));
+        }
+        
+        // Cargar notas guardadas al cargar la página
+        window.onload = function() {
+            var notasGuardadas = localStorage.getItem('notas');
+            if (notasGuardadas) {
+                document.getElementById('notas').value = notasGuardadas;
+            }
+        };
+        
+    </script>
+</body>
+</html>
 
